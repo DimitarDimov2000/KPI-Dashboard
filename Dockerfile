@@ -1,8 +1,24 @@
-FROM gradle:jdk21-jammy AS build
-COPY --chown=gradle:gradle . /home/gradle/src
-WORKDIR /home/gradle/src
-RUN gradle build --no-daemon
+# ---- Build stage ----
+FROM eclipse-temurin:25-jdk-jammy AS build
 
-FROM eclipse-temurin:21-jdk-jammy
-COPY --from=build /home/gradle/src/build/libs/KPI-Dashboard-0.0.1-SNAPSHOT.jar app.jar
-ENTRYPOINT ["java","-jar","/app.jar"]
+WORKDIR /app
+
+# copy everything into the image
+COPY . .
+
+# make sure the wrapper is executable
+RUN chmod +x ./gradlew
+
+# build the jar (skip tests for now; remove -x test once stable)
+RUN ./gradlew bootJar -x test --no-daemon
+
+
+# ---- Run stage ----
+FROM eclipse-temurin:25-jre-jammy
+
+WORKDIR /app
+
+# copy the fat jar from the build stage, name doesn’t matter because of the wildcard
+COPY --from=build /app/build/libs/*.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]
