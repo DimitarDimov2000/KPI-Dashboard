@@ -8,12 +8,19 @@ import java.util.List;
 @RequestMapping("/drinks")
 public class DrinkController {
 
+    private final DrinkService drinkService;
+
+    public DrinkController(DrinkService drinkService) {
+        this.drinkService = drinkService;
+    }
+
     @GetMapping
-    public List<Drink> getAllDrinks() {
-        return List.of(
-                new Drink(1L, "Beer", 5.0),
-                new Drink(2L, "Martini", 8.0),
-                new Drink(3L, "Aperol Spritz", 7.5)
-        );
+    public List<Drink> getAll() {
+        return drinkService.getAll();
+    }
+
+    @PostMapping
+    public Drink create(@RequestBody Drink drink) {
+        return drinkService.create(drink);
     }
 }
