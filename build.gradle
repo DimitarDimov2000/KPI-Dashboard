@@ -1,3 +1,6 @@
+import java.util.Properties
+
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.5.6'
@@ -36,6 +39,18 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testRuntimeOnly 'com.h2database:h2'
+}
+
+tasks.named("bootRun") {
+    def envFile = file(".env")
+    if (envFile.exists()) {
+        def props = new Properties()
+        envFile.withInputStream { props.load(it) }
+        props.each { k, v ->
+            environment k.toString(), v.toString()
+        }
+    }
 }
 
 tasks.named('test') {
